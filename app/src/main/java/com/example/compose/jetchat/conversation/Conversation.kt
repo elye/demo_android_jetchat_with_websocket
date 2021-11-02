@@ -80,6 +80,7 @@ import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.launch
+import java.util.*
 
 /**
  * Entry point for a conversation screen.
@@ -95,10 +96,11 @@ fun ConversationContent(
     uiState: ConversationUiState,
     navigateToProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onMessageEnter: (message: Message) -> Unit = { },
     onNavIconPressed: () -> Unit = { }
 ) {
     val authorMe = stringResource(R.string.author_me)
-    val timeNow = stringResource(id = R.string.now)
+    val timeNow = Calendar.getInstance().time
 
     val scrollState = rememberLazyListState()
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
@@ -119,9 +121,9 @@ fun ConversationContent(
                 )
                 UserInput(
                     onMessageSent = { content ->
-                        uiState.addMessage(
-                            Message(authorMe, content, timeNow)
-                        )
+                        val message = Message(authorMe, content, timeNow.toString())
+                        onMessageEnter(message)
+                        uiState.addMessage(message)
                     },
                     resetScroll = {
                         scope.launch {
