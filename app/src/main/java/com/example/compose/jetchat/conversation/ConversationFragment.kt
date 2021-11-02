@@ -37,6 +37,8 @@ import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ViewWindowInsetObserver
 import com.google.accompanist.insets.navigationBarsPadding
+import okhttp3.*
+import java.util.*
 
 class ConversationFragment : Fragment() {
 
@@ -75,6 +77,7 @@ class ConversationFragment : Fragment() {
                                 bundle
                             )
                         },
+                        onMessageEnter = ::onMessageEnter,
                         onNavIconPressed = {
                             activityViewModel.openDrawer()
                         },
@@ -85,5 +88,42 @@ class ConversationFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stop()
+    }
+
+    private var ws: WebSocket? = null
+    private val client by lazy { OkHttpClient() }
+
+    private fun start() {
+        val request: Request = Request.Builder().url("ws://10.0.2.2:8082/").build()
+        val listener = object: WebSocketListener() {
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                val currentTime: Date = Calendar.getInstance().time
+                exampleUiState.addMessage(Message("Web", text, currentTime.toString()))
+            }
+        }
+        ws = client.newWebSocket(request, listener)
+    }
+
+    private fun stop() {
+        ws?.close(1000, "Goodbye !")
+    }
+
+    private fun onMessageEnter(message: Message) {
+        ws?.send(message.content)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        client.dispatcher.executorService.shutdown()
     }
 }
