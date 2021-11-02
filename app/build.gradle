@@ -91,7 +91,6 @@ android {
 dependencies {
     implementation Libs.Kotlin.stdlib
     implementation Libs.Coroutines.android
-    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 
     implementation Libs.AndroidX.Activity.activityCompose
     implementation Libs.AndroidX.coreKtx
